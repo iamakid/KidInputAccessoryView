@@ -16,16 +16,21 @@ import UIKit
 class ViewController: UIViewController {
 
     @IBOutlet weak var contentLabel: UILabel!
-    
-    let inputContainer: kInputAccessoryView = {
-        let view = kInputAccessoryView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 80))
-        return view
-    }()
+    let inputContainer = kInputAccessoryView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         inputContainer.delegate = self
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(edit))
+        tap.cancelsTouchesInView = false
+        contentLabel.addGestureRecognizer(tap)
+        contentLabel.isUserInteractionEnabled = true
+    }
+    
+    @objc func edit() {
+        inputContainer.becomeFirstResponder()
     }
 
     override var canBecomeFirstResponder: Bool {
@@ -37,8 +42,16 @@ class ViewController: UIViewController {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        contentLabel.text = inputContainer.text
-        inputAccessoryView?.resignFirstResponder()
+
+        if let touch = touches.first,
+            touch.view == contentLabel {
+            print("contentLabel")
+
+//            inputContainer.becomeFirstResponder()
+        } else {
+            contentLabel.text = inputContainer.text
+            inputContainer.resignFirstResponder()
+        }
     }
 }
 

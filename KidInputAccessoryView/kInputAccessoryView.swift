@@ -14,7 +14,9 @@ protocol kInputAccessoryViewDelegate {
 
 class kInputAccessoryView: UIView {
     
-    private var inputTextField: UITextField!
+    private let kInputTextFieldHeight: CGFloat = 30
+    private let inputTextField = UITextField()
+    
     var text: String? {
         return inputTextField.text
     }
@@ -23,32 +25,34 @@ class kInputAccessoryView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        backgroundColor = .red
-        inputTextField = UITextField(frame: .zero)//CGRect(x: 20, y: 10, width: frame.width - 50, height: 30))
+        backgroundColor = .lightGray
+        addSubview(inputTextField)
         inputTextField.backgroundColor = .white
-        inputTextField.delegate = self
         
         // NOTICE: when adding constraints manually, you MUST set `translatesAutoresizingMaskIntoConstraints` equal to false, or it would do as its NAME, translates Autoresizing Mask Into Constrain.
+        translatesAutoresizingMaskIntoConstraints = false
         inputTextField.translatesAutoresizingMaskIntoConstraints = false
         
-        // NOTICE: Before setting the constrains, you MUST do addSubview() first
-        addSubview(inputTextField)
-        inputTextField.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 30).isActive = true
-        inputTextField.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -30).isActive = true
-        inputTextField.heightAnchor.constraint(equalToConstant: 30)
-        inputTextField.topAnchor.constraint(equalTo: self.topAnchor, constant: 25.0).isActive = true
-
+        inputTextField.delegate = self
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override var canBecomeFirstResponder: Bool {
+    override func layoutSubviews() {
         
-        return true
+        inputTextField.heightAnchor.constraint(equalToConstant: kInputTextFieldHeight).isActive = true
+        inputTextField.leftAnchor.constraint(equalTo: safeAreaLayoutGuide.leftAnchor, constant: 30).isActive = true
+        inputTextField.rightAnchor.constraint(equalTo: safeAreaLayoutGuide.rightAnchor, constant: -30).isActive = true
+        inputTextField.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -10).isActive = true
+        inputTextField.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 10).isActive = true
     }
     
+    // don't know why after override this method, inputTextField.heightAnchor finally works?
+    override var intrinsicContentSize: CGSize {
+        return .zero
+    }
     
     /**
      I faced a problem that it would show the warning message below everytime when I call `inputTextField.resignFirstResponder()`,
@@ -61,21 +65,30 @@ class kInputAccessoryView: UIView {
      KidInputAccessoryView[97971:3770390] [View] First responder warning: '<KidInputAccessoryView.kInputAccessoryView: 0x7fd9e2d1c2a0; frame = (0 0; 414 100); layer = <CALayer: 0x600003eb48a0>>' rejected resignFirstResponder when being removed from hierarchy
      """
      */
+    @discardableResult
     override func resignFirstResponder() -> Bool {
-        return inputTextField.resignFirstResponder()
+        inputTextField.resignFirstResponder()
+        return true
+    }
+    
+    @discardableResult
+    func canBecomeFirstResponder() -> Bool {
+        return inputTextField.canBecomeFirstResponder
+    }
+    
+    
+    @discardableResult
+    override func becomeFirstResponder() -> Bool {
+        return inputTextField.becomeFirstResponder()
     }
 }
 
 extension kInputAccessoryView: UITextFieldDelegate {
-
+    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         delegate?.accessoryViewShouldReturn(self, text: textField.text)
         textField.text = nil
-
-        return resignFirstResponder()
+        
+        return textField.resignFirstResponder()
     }
-//
-//    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-//        return true
-//    }
 }
