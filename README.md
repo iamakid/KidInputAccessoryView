@@ -8,6 +8,12 @@
 2. Let the bottom of inputAccessoryView would expand until the safearea zone to the device's bottom
 3. When keyboard is triggered, the height of inputAccessoryView wouldn't include the safearea height
 
+## Implement
+
+Adding a inputAccessoryView with UITextField MUST implement 3 things in __UIViewController__
+1. override var inputAccessoryView: UIView? , return the custom view (my naming is `inputContainer`)
+2. override var canBecomeFirstResponder: Bool, return true
+3. `inputContainer` MUST NOT be added as a subview in viewController
 
 ## Help Needed
 
